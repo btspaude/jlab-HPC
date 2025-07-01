@@ -140,7 +140,10 @@ if [ $prefix = 'e1209016' ]
 then
     export DATA_PATH=$GEN_DATA_PATH
 fi
-
+if [ $prefix = 'gep5' ]
+then
+    export DATA_PATH=$GEP_DATA_PATH
+fi
 
 #if use_sbs_gems has no input assume it is 0 (not used)
     if [ -z "$use_sbs_gems" ]

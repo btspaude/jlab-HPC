@@ -23,18 +23,19 @@ maxsegments=$6
 datadir=$7
 outdirpath=$8
 run_on_ifarm=$9
-analyzerenv=${10}
-sbsofflineenv=${11}
-sbsreplayenv=${12}
-ANAVER=${13}     # Analyzer version
-useJLABENV=${14} # Use 12gev_env instead of modulefiles?
-JLABENV=${15}    # /site/12gev_phys/softenv.sh version
+#analyzerenv=${10}
+#sbsofflineenv=${11}
+#sbsreplayenv=${12}
+#ANAVER=${13}     # Analyzer version
+#useJLABENV=${14} # Use 12gev_env instead of modulefiles?
+#JLABENV=${15}    # /site/12gev_phys/softenv.sh version
 
 # paths to necessary libraries (ONLY User specific part) ---- #
-export ANALYZER=$analyzerenv
-export SBSOFFLINE=$sbsofflineenv
-export SBS_REPLAY=$sbsreplayenv
-export DATA_DIR=$datadir
+#### Should be able to keep this commented out since seten.sh assigns these variables ####
+#export ANALYZER=$analyzerenv
+#export SBSOFFLINE=$sbsofflineenv
+#export SBS_REPLAY=$sbsreplayenv
+#export DATA_DIR=$datadir
 # ----------------------------------------------------------- #
 
 ifarmworkdir=${PWD}
@@ -49,14 +50,15 @@ if [[ $(type -t module) != function && -r ${MODULES} ]]; then
     source ${MODULES} 
 fi 
 # Choosing software environment
-if [[ (! -d /group/halla/modulefiles) || ($useJLABENV -eq 1) ]]; then 
-    source /site/12gev_phys/softenv.sh $JLABENV
-    source $ANALYZER/bin/setup.sh
-else 
-    module use /group/halla/modulefiles
-    module load analyzer/$ANAVER
-    module list
-fi
+### Should be able to comment out, since also set in setenv.sh script ####
+#if [[ (! -d /group/halla/modulefiles) || ($useJLABENV -eq 1) ]]; then 
+#    source /site/12gev_phys/softenv.sh $JLABENV
+#    source $ANALYZER/bin/setup.sh
+#else 
+#    module use /group/halla/modulefiles
+#    module load analyzer/$ANAVER
+#    module list
+#fi
 
 # setup analyzer specific environments
 export ANALYZER_CONFIGPATH=$SBS_REPLAY/replay

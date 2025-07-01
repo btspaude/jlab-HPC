@@ -88,6 +88,11 @@ then
     analyzer -b -q 'replay_gen.C+('$runnum','$maxevents','$firstevent','\"$prefix\"','$firstsegment','$maxsegments',2,0,0,'$use_sbs_gems')'
 fi
 
+if [ $prefix = 'gep5' ] #GEP replay #Hard-coded for 3-stream.
+then
+    analyzer -b -q 'replay_gep.C+('$runnum','$maxevents','$firstevent','\"$prefix\"','$firstsegment','$maxsegments',2,0,0,0,'$use_sbs_gems')'
+fi
+
 outfilename=$OUT_DIR'/'$prefix'_*'$runnum'*.root'
 logfilename=$LOG_DIR'/'$prefix'_*'$runnum'*.log' 
 
