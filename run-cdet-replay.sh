@@ -20,9 +20,10 @@ firstevent=$3
 prefix=$4
 firstsegment=$5
 maxsegments=$6
-datadir=$7
+maxstream=$7
+#datadir=$8
 outdirpath=$8
-run_on_ifarm=$9
+run_on_ifarm=${9}
 #analyzerenv=${10}
 #sbsofflineenv=${11}
 #sbsreplayenv=${12}
@@ -31,7 +32,7 @@ run_on_ifarm=$9
 #JLABENV=${15}    # /site/12gev_phys/softenv.sh version
 
 # paths to necessary libraries (ONLY User specific part) ---- #
-#### Should be able to keep this commented out since seten.sh assigns these variables ####
+#### Should be able to keep this commented out since setenv.sh assigns these variables ####
 #export ANALYZER=$analyzerenv
 #export SBSOFFLINE=$sbsofflineenv
 #export SBS_REPLAY=$sbsreplayenv
@@ -65,8 +66,11 @@ export ANALYZER_CONFIGPATH=$SBS_REPLAY/replay
 source $SBSOFFLINE/bin/sbsenv.sh
 
 export DB_DIR=$SBS_REPLAY/DB
-export OUT_DIR=$SWIF_JOB_WORK_DIR
-export LOG_DIR=$SWIF_JOB_WORK_DIR
+OUT_DIR=$SWIF_JOB_WORK_DIR/cdetJobOutputs
+LOG_DIR=$SWIF_JOB_WORK_DIR/cdetLogOutputs
+mkdir -p "$OUT_DIR"; mkdir -p "LOG_DIR"
+export OUT_DIR
+export LOG_DIR
 
 echo 'OUT_DIR='$OUT_DIR
 echo 'LOG_DIR='$LOG_DIR
@@ -78,15 +82,17 @@ if [[ -f .rootrc ]]; then
 fi
 cp $SBS/run_replay_here/.rootrc $SWIF_JOB_WORK_DIR
 
-analyzer -b -q 'replay_CDet.C+('$runnum','$maxevents','$firstevent','\"$prefix\"','$firstsegment','$maxsegments')'
+analyzer -b -q 'replay_CDet.C+('$runnum','\"$prefix\"','$maxevents','$firstevent','$firstsegment','$maxsegments','$maxstream')'
 
-outfilename=$OUT_DIR'/e1209019_*'$runnum'*.root'
-#logfilename=$LOG_DIR'/replay_gmn_'$runnum'*.log' 
-logfilename=$LOG_DIR'/e1209019_*'$runnum'*.log' 
+outfilename=$OUT_DIR'/cdet_'$runnum'_'$maxevents'.root'
+echo "Looking for output file: $outfilename"
+#logfilename=$LOG_DIR'/replay_gmn_'$runnum'*.log'
+##### below log dir commented out since cdet replay doesn't output .log files #####
+#logfilename=$LOG_DIR'/e1209019_*'$runnum'*.log' 
 
 # move output files
-mv $outfilename $outdirpath/rootfiles
-mv $logfilename $outdirpath/logs
+#mv $outfilename $outdirpath/rootfiles
+#mv $logfilename $outdirpath/logs
 
 # clean up the work directory
 rm .rootrc
