@@ -105,23 +105,24 @@ for ((i=0; i<=$maxsegments; i++))
 do
     #fnameout_pattern='/farm_out/pdbforce/pdatta_gmn_'$runnum'_segment'$i'.out'
     #sbatch --output=$fnameout_pattern run_GMN_sbatch_nohodo.sh $runnum -1 0 e1209019 $i 1
-    jobname=${USER}'_gmn_'$runnum'_segment'$i
+    jobname=${USER}'_cdet_'$runnum'_segment'$i
     
     # look for first segment on cache disk:
-    firstsegname='e1209019_'$runnum'.evio.0.0'
-    mssfirst='mss:/mss/halla/sbs/raw/'$firstsegname
-    cachefirst='/cache/mss/halla/sbs/raw/'$firstsegname
+    firstsegname='gep5_'$runnum'.evio.0.0'
+    mssfirst='mss:/mss/halla/sbs/GEp/raw/'$firstsegname
+    cachefirst='/cache/mss/halla/sbs/GEp/raw/'$firstsegname
     
-    eviofilename='e1209019_'$runnum'.evio.0.'$i
-    mssfilename='mss:/mss/halla/sbs/raw/'$eviofilename
-    cachefile='/cache/mss/halla/sbs/raw/'$eviofilename
+    eviofilename='gep5_'$runnum'.evio.0.'$i
+    mssfilename='mss:/mss/halla/sbs/GEp/raw/'$eviofilename
+    cachefile='/cache/mss/halla/sbs/GEp/raw/'$eviofilename
     
     script=$SCRIPT_DIR'/run-cdet-replay.sh'
 
-    testfilename='/mss/halla/sbs/raw/'$eviofilename
-    
-    outfilename='match:e1209019_fullreplay_'$runnum'*seg'$i'*.root'
-    logfilename='match:e1209019_fullreplay_'$runnum'*seg'$i'*.log'
+    testfilename='/mss/halla/sbs/GEp/raw/'$eviofilename
+
+    #output structures come from replay script
+    outfilename='match:cdet_'$runnum'_'$nevents'.root'
+    #logfilename='match:gep5_fullreplay_'$runnum'*seg'$i'*.log'
 
     outcopydir=$outdirpath'/rootfiles'
     logcopydir=$outdirpath'/logs'
@@ -133,15 +134,15 @@ do
 	    echo 'Adding new swif2 job, runnum='$runnum', segment='$i     
 	    if [ $i -gt 0 ]; then
 		echo 'segment '$i' also requires first segment'
-		swif2 add-job -workflow $workflowname -partition production -name $jobname -cores 1 -disk 25GB -ram 1500MB -input $cachefile $mssfilename -input $cachefirst $mssfirst $script $runnum $nevents 0 e1209019 $i 1 $DATA_DIR $outdirpath $run_on_ifarm $ANALYZER $SBSOFFLINE $SBS_REPLAY $ANAVER $useJLABENV $JLABENV
+		swif2 add-job -workflow $workflowname -partition production -name $jobname -cores 1 -disk 25GB -ram 1500MB -input $cachefile $mssfilename -input $cachefirst $mssfirst $script $runnum $nevents 0 gep5 $i 1 $DATA_DIR $outdirpath $run_on_ifarm $ANALYZER $SBSOFFLINE $SBS_REPLAY $ANAVER $useJLABENV $JLABENV
 	    else
 		echo 'segment '$i' IS first segment'
-		swif2 add-job -workflow $workflowname -partition production -name $jobname -cores 1 -disk 25GB -ram 1500MB -input $cachefile $mssfilename $script $runnum $nevents 0 e1209019 $i 1 $DATA_DIR $outdirpath $run_on_ifarm $ANALYZER $SBSOFFLINE $SBS_REPLAY $ANAVER $useJLABENV $JLABENV
+		swif2 add-job -workflow $workflowname -partition production -name $jobname -cores 1 -disk 25GB -ram 1500MB -input $cachefile $mssfilename $script $runnum $nevents 0 gep5 $i 1 $DATA_DIR $outdirpath $run_on_ifarm $ANALYZER $SBSOFFLINE $SBS_REPLAY $ANAVER $useJLABENV $JLABENV
 	    fi
 	    
 	else
 	    if [ -f "$cachefile" ]; then
-		$script $runnum $nevents 0 e1209019 $i 1 $DATA_DIR $outdirpath $run_on_ifarm $ANALYZER $SBSOFFLINE $SBS_REPLAY $ANAVER $useJLABENV $JLABENV
+		$script $runnum $nevents 0 gep5 $i 1 $DATA_DIR $outdirpath $run_on_ifarm $ANALYZER $SBSOFFLINE $SBS_REPLAY $ANAVER $useJLABENV $JLABENV
 	    else
 		echo -e "!*!ERROR!!" $cachefile "doesn't exist!"
 	    fi

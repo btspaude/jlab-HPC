@@ -68,7 +68,7 @@ source $SBSOFFLINE/bin/sbsenv.sh
 export DB_DIR=$SBS_REPLAY/DB
 OUT_DIR=$SWIF_JOB_WORK_DIR/cdetJobOutputs
 LOG_DIR=$SWIF_JOB_WORK_DIR/cdetLogOutputs
-mkdir -p "$OUT_DIR"; mkdir -p "LOG_DIR"
+mkdir -p "$OUT_DIR"; mkdir -p "$LOG_DIR"
 export OUT_DIR
 export LOG_DIR
 
