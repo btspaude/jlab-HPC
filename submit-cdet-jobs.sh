@@ -12,7 +12,7 @@
 
 # Setting necessary environments via setenv.sh
 source setenv.sh
-export DATA_DIR=/cache/mss/halla/sbs/raw
+export DATA_DIR=/cache/mss/halla/sbs/GEp/raw
 
 # List of arguments
 runnum=$1       # run number 

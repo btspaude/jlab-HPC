@@ -20,23 +20,21 @@ firstevent=$3
 prefix=$4
 firstsegment=$5
 maxsegments=$6
-maxstream=$7
-#datadir=$8
+datadir=$7
 outdirpath=$8
 run_on_ifarm=${9}
-#analyzerenv=${10}
-#sbsofflineenv=${11}
-#sbsreplayenv=${12}
-#ANAVER=${13}     # Analyzer version
-#useJLABENV=${14} # Use 12gev_env instead of modulefiles?
-#JLABENV=${15}    # /site/12gev_phys/softenv.sh version
+analyzerenv=${10}
+sbsofflineenv=${11}
+sbsreplayenv=${12}
+ANAVER=${13}     # Analyzer version
+useJLABENV=${14} # Use 12gev_env instead of modulefiles?
+JLABENV=${15}    # /site/12gev_phys/softenv.sh version
 
 # paths to necessary libraries (ONLY User specific part) ---- #
-#### Should be able to keep this commented out since setenv.sh assigns these variables ####
-#export ANALYZER=$analyzerenv
-#export SBSOFFLINE=$sbsofflineenv
-#export SBS_REPLAY=$sbsreplayenv
-#export DATA_DIR=$datadir
+export ANALYZER=$analyzerenv
+export SBSOFFLINE=$sbsofflineenv
+export SBS_REPLAY=$sbsreplayenv
+export DATA_DIR=$datadir
 # ----------------------------------------------------------- #
 
 ifarmworkdir=${PWD}
@@ -52,25 +50,22 @@ if [[ $(type -t module) != function && -r ${MODULES} ]]; then
 fi 
 # Choosing software environment
 ### Should be able to comment out, since also set in setenv.sh script ####
-#if [[ (! -d /group/halla/modulefiles) || ($useJLABENV -eq 1) ]]; then 
-#    source /site/12gev_phys/softenv.sh $JLABENV
-#    source $ANALYZER/bin/setup.sh
-#else 
-#    module use /group/halla/modulefiles
-#    module load analyzer/$ANAVER
-#    module list
-#fi
+if [[ (! -d /group/halla/modulefiles) || ($useJLABENV -eq 1) ]]; then 
+    source /site/12gev_phys/softenv.sh $JLABENV
+    source $ANALYZER/bin/setup.sh
+else 
+    module use /group/halla/modulefiles
+    module load analyzer/$ANAVER
+    module list
+fi
 
 # setup analyzer specific environments
 export ANALYZER_CONFIGPATH=$SBS_REPLAY/replay
 source $SBSOFFLINE/bin/sbsenv.sh
 
 export DB_DIR=$SBS_REPLAY/DB
-OUT_DIR=$SWIF_JOB_WORK_DIR/cdetJobOutputs
-LOG_DIR=$SWIF_JOB_WORK_DIR/cdetLogOutputs
-mkdir -p "$OUT_DIR"; mkdir -p "$LOG_DIR"
-export OUT_DIR
-export LOG_DIR
+export OUT_DIR=$SWIF_JOB_WORK_DIR
+export LOG_DIR=$SWIF_JOB_WORK_DIR
 
 echo 'OUT_DIR='$OUT_DIR
 echo 'LOG_DIR='$LOG_DIR
@@ -82,7 +77,7 @@ if [[ -f .rootrc ]]; then
 fi
 cp $SBS/run_replay_here/.rootrc $SWIF_JOB_WORK_DIR
 
-analyzer -b -q 'replay_CDet.C+('$runnum','\"$prefix\"','$maxevents','$firstevent','$firstsegment','$maxsegments','$maxstream')'
+analyzer -b -q 'replay_CDet.C+('$runnum','\"$prefix\"','$maxevents','$firstevent','$firstsegment','$maxsegments')'
 
 outfilename=$OUT_DIR'/cdet_'$runnum'_'$maxevents'.root'
 echo "Looking for output file: $outfilename"
@@ -91,7 +86,7 @@ echo "Looking for output file: $outfilename"
 #logfilename=$LOG_DIR'/e1209019_*'$runnum'*.log' 
 
 # move output files
-#mv $outfilename $outdirpath/rootfiles
+mv $outfilename $outdirpath/rootfiles
 #mv $logfilename $outdirpath/logs
 
 # clean up the work directory
