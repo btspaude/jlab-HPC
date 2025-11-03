@@ -23,7 +23,7 @@ run_on_ifarm=$5 # 1=>Yes (If true, runs all jobs on ifarm)
 # Workflow name (Not relevant if run_on_ifarm = 1)
 workflowname=
 # Specify a directory on volatile to store replayed ROOT files
-outdirpath= #/volatile/halla/sbs/btspaude/cdet/
+outdirpath=$OUT_DIR 
 
 # Checking the environments
 if [[ ! -d $SCRIPT_DIR ]]; then
@@ -125,7 +125,7 @@ do
     outfilename='match:cdet_'$runnum'_'$nevents'.root'
     #logfilename='match:gep5_fullreplay_'$runnum'*seg'$i'*.log'
 
-    outcopydir=$outdirpath'/rootfiles'
+    outcopydir=$outdirpath
     logcopydir=$outdirpath'/logs'
 
     if [ -f "$testfilename" ]; then
