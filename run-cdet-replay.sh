@@ -72,29 +72,125 @@ echo 'LOG_DIR='$LOG_DIR
 
 # handling any existing .rootrc file in the work directory
 # mainly necessary while running the jobs on ifarm
-if [[ -f .rootrc ]]; then
-    mv .rootrc .rootrc_temp
+REPLAY_MACRO="${SBS_REPLAY}/replay/replay_CDet.C"
+
+if [[ ! -f "${REPLAY_MACRO}" ]]; then
+    echo "ERROR: Replay macro not found:"
+    echo "  ${REPLAY_MACRO}"
+    exit 1
 fi
-cp $SBS/run_replay_here/.rootrc $SWIF_JOB_WORK_DIR
 
-# --- Clean up stale ROOT ACLiC temp files before replay ---
-rm -f *_ACLiC_dict.* *_ACLiC_dict.cxx_tmp_* *.so *.pcm *.d
+# Every job gets a separate ACLiC directory.
+#
+# SWIF_JOB_WORK_DIR should already be unique for each SWIF job. Including
+# the process ID also protects local/ifarm runs started in the same directory.
+ACLIC_DIR="${SWIF_JOB_WORK_DIR}/aclic_${runnum}_${firstsegment}_$$"
+ROOT_DRIVER="${SWIF_JOB_WORK_DIR}/run_replay_${runnum}_${firstsegment}_$$.C"
 
-analyzer -b -q 'replay_CDet.C+('$runnum','$maxevents','$firstevent','\"$prefix\"','$firstsegment','$maxsegments')'
+mkdir -p "${ACLIC_DIR}"
 
-outfilename=${OUT_DIR}/cdet_${runnum}_*.root
+# ------------------------------------------------------------------------- #
+# Handle .rootrc
+# ------------------------------------------------------------------------- #
 
-echo "Looking for output file: $outfilename"
-#logfilename=$LOG_DIR'/replay_gmn_'$runnum'*.log'
-##### below log dir commented out since cdet replay doesn't output .log files #####
-#logfilename=$LOG_DIR'/e1209019_*'$runnum'*.log' 
+ROOTRC_BACKUP=""
 
-# move output files
-cp $outfilename $outdirpath/rootfiles
-#mv $logfilename $outdirpath/logs
+cleanup()
+{
+    status=$?
 
-# clean up the work directory
-rm .rootrc
-if [[ -f .rootrc_temp ]]; then
-    mv .rootrc_temp .rootrc
+    rm -f "${ROOT_DRIVER}"
+    rm -rf "${ACLIC_DIR}"
+
+    if [[ -f "${SWIF_JOB_WORK_DIR}/.rootrc" ]]; then
+        rm -f "${SWIF_JOB_WORK_DIR}/.rootrc"
+    fi
+
+    if [[ -n "${ROOTRC_BACKUP}" &&
+          -f "${ROOTRC_BACKUP}" ]]; then
+        mv "${ROOTRC_BACKUP}" "${SWIF_JOB_WORK_DIR}/.rootrc"
+    fi
+
+    exit "${status}"
+}
+
+trap cleanup EXIT
+
+if [[ -f "${SWIF_JOB_WORK_DIR}/.rootrc" ]]; then
+    ROOTRC_BACKUP="${SWIF_JOB_WORK_DIR}/.rootrc.original.$$"
+    mv "${SWIF_JOB_WORK_DIR}/.rootrc" "${ROOTRC_BACKUP}"
 fi
+
+cp "${SBS}/run_replay_here/.rootrc" \
+   "${SWIF_JOB_WORK_DIR}/.rootrc"
+
+# ------------------------------------------------------------------------- #
+# Build a small ROOT driver macro
+#
+# Important:
+#   SetBuildDir() is called before loading replay_CDet.C+.
+#   Therefore all ACLiC-generated files go into this job's private directory,
+#   not into the shared SBS_REPLAY/replay directory.
+# ------------------------------------------------------------------------- #
+
+cat > "${ROOT_DRIVER}" <<EOF
+{
+    gSystem->SetBuildDir("${ACLIC_DIR}", kTRUE);
+
+    const char* replayMacro =
+        "${REPLAY_MACRO}+";
+
+    Long_t loadStatus =
+        gROOT->ProcessLine(TString::Format(".L %s", replayMacro));
+
+    if (loadStatus != 0) {
+        Error("run_replay", "Failed to compile/load %s", replayMacro);
+        gSystem->Exit(1);
+    }
+
+    replay_CDet(
+        ${runnum},
+        ${maxevents},
+        ${firstevent},
+        "${prefix}",
+        ${firstsegment},
+        ${maxsegments}
+    );
+}
+EOF
+
+echo "ROOT driver macro:"
+echo "  ${ROOT_DRIVER}"
+
+echo "Job-local ACLiC directory:"
+echo "  ${ACLIC_DIR}"
+
+# ------------------------------------------------------------------------- #
+# Run Analyzer
+# ------------------------------------------------------------------------- #
+
+analyzer -b -q "${ROOT_DRIVER}"
+
+# ------------------------------------------------------------------------- #
+# Copy output files
+# ------------------------------------------------------------------------- #
+
+mkdir -p "${outdirpath}/rootfiles"
+
+shopt -s nullglob
+
+output_files=(
+    "${OUT_DIR}"/cdet_"${runnum}"_*.root
+)
+
+if (( ${#output_files[@]} == 0 )); then
+    echo "ERROR: No replay output files were produced for run ${runnum}."
+    exit 1
+fi
+
+echo "Copying output files:"
+
+for output_file in "${output_files[@]}"; do
+    echo "  ${output_file}"
+    cp "${output_file}" "${outdirpath}/rootfiles/"
+done

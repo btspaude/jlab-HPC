@@ -111,11 +111,11 @@ do
     # look for first segment on cache disk:
     firstsegname='gep5_'$runnum'.evio.0.0'
     mssfirst='mss:/mss/halla/sbs/GEp/raw/'$firstsegname
-    cachefirst='/cache/mss/halla/sbs/GEp/raw/'$firstsegname
+    cachefirst='/cache/halla/sbs/GEp/raw/'$firstsegname
     
     eviofilename='gep5_'$runnum'.evio.0.'$i
     mssfilename='mss:/mss/halla/sbs/GEp/raw/'$eviofilename
-    cachefile='/cache/mss/halla/sbs/GEp/raw/'$eviofilename
+    cachefile='/cache/halla/sbs/GEp/raw/'$eviofilename
     
     script=$SCRIPT_DIR'/run-cdet-replay.sh'
 
